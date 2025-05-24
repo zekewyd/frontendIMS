@@ -1,0 +1,16 @@
+{
+  "files": {
+    "main.css": "/frontendIMS/static/css/main.4dbc96c1.css",
+    "main.js": "/frontendIMS/static/js/main.ffe294a5.js",
+    "static/media/login-vector.png": "/frontendIMS/static/media/login-vector.4ad9b4dbe3b235baa731.png",
+    "static/media/bleu_logo1.jpg": "/frontendIMS/static/media/bleu_logo1.96324895ab03ee32ad1e.jpg",
+    "static/media/logo.png": "/frontendIMS/static/media/logo.09b26b61f240e69c81b6.png",
+    "index.html": "/frontendIMS/index.html",
+    "main.4dbc96c1.css.map": "/frontendIMS/static/css/main.4dbc96c1.css.map",
+    "main.ffe294a5.js.map": "/frontendIMS/static/js/main.ffe294a5.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.4dbc96c1.css",
+    "static/js/main.ffe294a5.js"
+  ]
+}
