@@ -1,6 +1,5 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import LoginAs from './components/LogINAs'; 
 import Login from './components/login';
 import Dashboard from './components/admin/dashboard';
 import RecipeManagement from './components/admin/recipeManagement';
@@ -12,9 +11,8 @@ import Merchandise from './components/admin/merchandise';
 
 function App() {
   return (
-    <Router>
+    <Router basename="/frontendIMS">
       <Routes>
-        <Route path="/" element={<LoginAs />} /> 
         <Route path="/login" element={<Login />} />
         <Route path="/admin/dashboard" element={<Dashboard />} />
         <Route path="/admin/recipeManagement" element={<RecipeManagement />} />
