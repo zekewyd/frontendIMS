@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { HashRouter as Router, Routes, Route } from 'react-router-dom';
 import Login from './components/login';
 import Dashboard from './components/admin/dashboard';
 import RecipeManagement from './components/admin/recipeManagement';
@@ -11,7 +11,7 @@ import Merchandise from './components/admin/merchandise';
 
 function App() {
   return (
-    <Router basename="/frontendIMS">
+    <Router>
       <Routes>
         <Route path="/login" element={<Login />} />
         <Route path="/admin/dashboard" element={<Dashboard />} />
