@@ -8,8 +8,6 @@ import AddMerchandiseModal from './modals/addMerchandiseModal';
 import EditMerchandiseModal from "./modals/editMerchandiseModal";
 import ViewMerchandiseModal from "./modals/viewMerchandiseModal";
 
-const API_BASE_URL = process.env.MERCH_API_URL;
-const getAuthToken = () => localStorage.getItem("access_token");
 const DEFAULT_PROFILE_IMAGE = "https://media-hosting.imagekit.io/1123dd6cf5c544aa/screenshot_1746457481487.png?Expires=1841065483&Key-Pair-Id=K2ZIVPTIP2VGHC&Signature=kiHcXbHpirt9QHbMA4by~Kd4b2BrczywyVUfZZpks5ga3tnO8KlP8s5tdDpZQqinqOG30tGn0tgSCwVausjJ1OJ9~e6qPVjLXbglD-65hmsehYCZgEzeyGPPE-rOlyGJCgJC~GCZOu0jDKKcu2fefrClaqBBT3jaXoK4qhDPfjIFa2GCMfetybNs0RF8BtyKLgFGeEkvibaXhYxmzO8tksUKaLAMLbsPWvHBNuzV6Ar3mj~lllq7r7nrynNfdvbtuED7OGczSqZ8H-iopheAUhaWZftAh9tX2vYZCZZ8UztSEO3XUgLxMMtv9NnTei1omK00iJv1fgBjwR2lSqRk7w__";
 
 function Merchandise() { 
@@ -18,7 +16,7 @@ function Merchandise() {
     const [merchandise, setMerchandise] = useState([]);
     const navigate = useNavigate();
     const toggleDropdown = () => setDropdownOpen(!isDropdownOpen);
-    const [loggedInUserDisplay, setLoggedInUserDisplay] = useState({ role: "User", name: "Current User" });
+    const [loggedInUserDisplay, setLoggedInUserDisplay] = useState({ role: "admin", name: "Admin" });
 
     const [showAddMerchandiseModal, setShowAddMerchandiseModal] = useState(false);
     const [showEditMerchandiseModal, setShowEditMerchandiseModal] = useState(false);
@@ -31,60 +29,20 @@ function Merchandise() {
     });
 
     useEffect(() => {
-        const token = getAuthToken();
-        if (token) {
-            try {
-                const decodedToken = JSON.parse(atob(token.split('.')[1]));
-                setLoggedInUserDisplay({
-                    name: decodedToken.sub || "Current User",
-                    role: decodedToken.role || "User"
-                });
-            } catch (error) {
-                console.error("Error decoding token for display:", error);
-            }
-        }
+        setLoggedInUserDisplay({
+            name: "Admin",
+            role: "admin"
+        });
+
+        // harcoded merch
+        setMerchandise([
+            { id: 1, name: "Vintage Shirt", quantity: 25, dateAdded: "2024-05-01", status: "Available" },
+            { id: 2, name: "Tumbler", quantity: 0, dateAdded: "2024-05-02", status: "Not Available" },
+            { id: 3, name: "Sticker Pack", quantity: 5, dateAdded: "2024-05-03", status: "Low Stock" },
+            { id: 4, name: "Vinyl Record", quantity: 12, dateAdded: "2024-05-04", status: "Available" },
+            { id: 5, name: "Poster", quantity: 7, dateAdded: "2024-05-05", status: "Low Stock" },
+        ]);
     }, []);
-
-    useEffect(() => {
-                fetchMerchandise();
-            }, []);
-    
-    const fetchMerchandise = async () => {
-        const token = getAuthToken();
-        if (!token) {
-            alert("Authentication token not found.");
-            return;
-        }
-
-        try {
-            const response = await fetch(`${API_BASE_URL}/merchandise/merchandise/`, {
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                },
-            });
-
-            if (!response.ok) {
-                throw new Error("Failed to fetch merchandise.");
-            }
-
-            const data = await response.json();
-
-            const formattedData = data.map((item) => ({
-                id: item.MerchandiseID,
-                name: item.MerchandiseName,
-                quantity: item.MerchandiseQuantity,
-                dateAdded: item.MerchandiseDateAdded,
-                status: item.Status,
-            }));
-            console.log("Fetched data from backend:", data);
-            console.log("Formatted merchandise", formattedData);
-
-            setMerchandise(formattedData);
-        } catch (error) {
-            console.error("Error fetching merchandise:", error);
-            alert("Error loading merchandise");
-        }
-    };
 
     const handleView = (merchandise) => {
         setSelectedMerchandise(merchandise);
@@ -96,24 +54,11 @@ function Merchandise() {
         setShowEditMerchandiseModal(true);
     };
 
-    const handleDelete = async (merchIdToDelete) => {
-
+    const handleDelete = (merchIdToDelete) => {
         const confirmDelete = window.confirm("Are you sure you want to delete this item?");
         if (!confirmDelete) return;
 
-        try {
-            const response = await fetch(`${API_BASE_URL}/merchandise/merchandise/${merchIdToDelete}`, {
-                method: "DELETE",
-                headers: { Authorization: `Bearer ${getAuthToken()}` },
-            });
-
-            if (!response.ok) throw new Error("Failed to delete item.");
-
-            setMerchandise((prev) => prev.filter((merchandise) => merchandise.id !== merchIdToDelete));
-        } catch (error) {
-            console.error("Error deleting item:", error);
-            alert("Failed to delete item.");
-        }
+        setMerchandise((prev) => prev.filter((item) => item.id !== merchIdToDelete));
     };
 
     const columns = [
@@ -139,7 +84,6 @@ function Merchandise() {
     ];
 
     const handleLogout = () => {
-        localStorage.removeItem('access_token');
         navigate('/login');
     };
 
@@ -154,7 +98,7 @@ function Merchandise() {
                     <div className="header-right">
                         <div className="header-date">{currentDate}</div>
                         <div className="header-profile">
-                            <div className="profile-pic"style={{ backgroundImage: `url(${DEFAULT_PROFILE_IMAGE})` }}></div>
+                            <div className="profile-pic" style={{ backgroundImage: `url(${DEFAULT_PROFILE_IMAGE})` }}></div>
                             <div className="profile-info">
                                 <div className="profile-role">Hi! I'm {loggedInUserDisplay.role}</div>
                                 <div className="profile-name">{loggedInUserDisplay.name}</div>
@@ -187,7 +131,7 @@ function Merchandise() {
                                 <option value="all">All</option>
                                 <option value="Available">Available</option>
                                 <option value="Low Stock">Low Stock</option>
-                                <option value="Out of Stock">Out of Stock</option>
+                                <option value="Not Available">Not Available</option>
                             </select>
                         </div>
 
@@ -252,7 +196,6 @@ function Merchandise() {
                     onClose={() => setShowAddMerchandiseModal(false)} 
                     onSubmit={(newMerchandise) => {
                         setShowAddMerchandiseModal(false);
-                        fetchMerchandise();
                     }}
                 />
             )}
@@ -263,7 +206,6 @@ function Merchandise() {
                     onClose={() => setShowEditMerchandiseModal(false)}
                     onUpdate={() => {
                         setSelectedMerchandise(null);
-                        fetchMerchandise();
                     }}
                 />
             )}
