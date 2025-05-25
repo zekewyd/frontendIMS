@@ -157,7 +157,7 @@ function Ingredients() {
                     <div className="header-right">
                         <div className="header-date">{currentDate}</div>
                         <div className="header-profile">
-                            <div className="profile-pic" style={{ backgroundImage: `url(${DEFAULT_PROFILE_IMAGE})` }}></div>
+                            <div className="profile-pic"style={{ backgroundImage: `url(${DEFAULT_PROFILE_IMAGE})` }}></div>
                             <div className="profile-info">
                                 <div className="profile-role">Hi! I'm {loggedInUserDisplay.role}</div>
                                 <div className="profile-name">{loggedInUserDisplay.name}</div>
@@ -186,8 +186,8 @@ function Ingredients() {
                         />
                         <div className="filter-ingredient-container">
                             <label htmlFor="filter-ingredient">Filter by Status:</label>
-                            <select
-                                id="filter-ingredient"
+                            <select 
+                                id="filter-ingredient" 
                                 className="filter-ingredient-select"
                                 value={statusFilter}
                                 onChange={(e) => setStatusFilter(e.target.value)}
@@ -195,20 +195,20 @@ function Ingredients() {
                                 <option value="all">All</option>
                                 <option value="Available">Available</option>
                                 <option value="Low Stock">Low Stock</option>
-                                <option value="Not Available">Not Available</option>
+                                <option value="Out of Stock">Out of Stock</option>
                             </select>
                         </div>
 
                         <div className="sort-ingredient-container">
                             <label htmlFor="sort-ingredient">Sort by:</label>
-                            <select
-                                id="sort-ingredient"
+                            <select 
+                                id="sort-ingredient" 
                                 className="sort-ingredient-select"
                                 value={sortOrder}
                                 onChange={(e) => setSortOrder(e.target.value)}
                             >
-                                <option value="nameAsc">Ascending</option>
-                                <option value="nameDesc">Descending</option>
+                                <option value="nameAsc">Newest</option>
+                                <option value="nameDesc">Oldest</option>
                             </select>
                         </div>
 
@@ -229,13 +229,31 @@ function Ingredients() {
                         highlightOnHover
                         responsive
                         pagination
+                        customStyles={{
+                            headCells: {
+                                style: {
+                                    backgroundColor: "#4B929D",
+                                    color: "#fff",
+                                    fontWeight: "600",
+                                    fontSize: "14px",
+                                    padding: "12px",
+                                    textTransform: "uppercase",
+                                    letterSpacing: "1px",
+                                },
+                            },
+                            rows: {
+                                style: {
+                                    minHeight: "55px",
+                                },
+                            },
+                        }}
                     />
                 </div>
+        </div>
 
-                {showAddIngredientModal && <AddIngredientModal onClose={() => setShowAddIngredientModal(false)} />}
-                {showEditIngredientModal && <EditIngredientModal ingredient={currentIngredient} onClose={() => setShowEditIngredientModal(false)} />}
-                {showViewIngredientModal && <ViewIngredientModal ingredient={currentIngredient} onClose={() => setShowViewIngredientModal(false)} />}
-            </div>
+            {showAddIngredientModal && <AddIngredientModal onClose={() => setShowAddIngredientModal(false)} />}
+            {showEditIngredientModal && <EditIngredientModal ingredient={currentIngredient} onClose={() => setShowEditIngredientModal(false)} />}
+            {showViewIngredientModal && <ViewIngredientModal ingredient={currentIngredient} onClose={() => setShowViewIngredientModal(false)} />}
         </div>
     );
 }

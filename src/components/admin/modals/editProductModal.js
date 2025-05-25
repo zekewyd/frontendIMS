@@ -2,23 +2,27 @@ import React, { useEffect, useState } from "react";
 import PropTypes from 'prop-types'; 
 import "./editProductModal.css";
 
-const API_BASE_URL = process.env.PRODUCTS_API_URL;
+const API_BASE_URL = "http://127.0.0.1:8001";
 const getAuthToken = () => localStorage.getItem("access_token");
 
 function EditProductModal({ product, onClose, onUpdate }) {
-    // camel case the prop
+    // existing states
     const [productTypeID, setProductTypeID] = useState("");
     const [productName, setProductName] = useState("");
     const [productCategory, setProductCategory] = useState("");
     const [productDescription, setProductDescription] = useState("");
-    const [productTypes, setProductTypes] = useState([]);
+    const [productPrice, setProductPrice] = useState("");
+    const [productImage, setProductImage] = useState(null);
+    const [productImagePreview, setProductImagePreview] = useState(null);
 
+    const [productTypes, setProductTypes] = useState([]);
     const [isLoading, setIsLoading] = useState(false);
     const [apiError, setApiError] = useState('');
     const [formErrors, setFormErrors] = useState({
         productTypeID: "",
         productName: "",
         productCategory: "",
+        productPrice: "",
     });
 
     useEffect(() => {
@@ -27,6 +31,8 @@ function EditProductModal({ product, onClose, onUpdate }) {
             setProductName(product.productName || "");
             setProductCategory(product.productCategory || "");
             setProductDescription(product.productDescription || "");
+            setProductPrice(product.productPrice ? String(product.productPrice) : "");
+            setProductImagePreview(product.productImageURL || null); // assuming product has productImageURL property with image URL
         }
     }, [product]);
 
@@ -61,9 +67,20 @@ function EditProductModal({ product, onClose, onUpdate }) {
         if (!productTypeID) newErrors.productTypeID = "Product Type is required";
         if (!productName.trim()) newErrors.productName = "Product Name is required";
         if (!productCategory.trim()) newErrors.productCategory = "Product Category is required";
+        if (!productPrice.trim() || isNaN(productPrice) || Number(productPrice) < 0) newErrors.productPrice = "Valid Product Price is required";
 
         setFormErrors(newErrors);
         return Object.keys(newErrors).length === 0;
+    };
+
+    const handleImageChange = (e) => {
+        const file = e.target.files[0];
+        setProductImage(file);
+        if (file) {
+            setProductImagePreview(URL.createObjectURL(file));
+        } else {
+            setProductImagePreview(null);
+        }
     };
 
     const handleSubmit = async (e) => {
@@ -82,22 +99,25 @@ function EditProductModal({ product, onClose, onUpdate }) {
 
         setIsLoading(true);
 
-        const payloadToApi = {
-            ProductTypeID: parseInt(productTypeID, 10),
-            ProductName: productName,
-            ProductCategory: productCategory,
-            ProductDescription: productDescription,
-        };
-
-        // update product 
         try {
+            // If your API supports multipart/form-data for updating images, use FormData
+            const formData = new FormData();
+            formData.append("ProductTypeID", parseInt(productTypeID, 10));
+            formData.append("ProductName", productName);
+            formData.append("ProductCategory", productCategory);
+            formData.append("ProductDescription", productDescription);
+            formData.append("ProductPrice", productPrice);
+            if (productImage) {
+                formData.append("ProductImage", productImage);
+            }
+
             const response = await fetch(`${API_BASE_URL}/products/products/${product.productID}`, { 
                 method: "PUT",
                 headers: {
-                    "Content-Type": "application/json",
                     Authorization: `Bearer ${token}`,
+                    // 'Content-Type': 'multipart/form-data' --> DON'T set Content-Type explicitly with FormData
                 },
-                body: JSON.stringify(payloadToApi), // send pascal case payload
+                body: formData,
             });
 
             if (!response.ok) {
@@ -132,7 +152,7 @@ function EditProductModal({ product, onClose, onUpdate }) {
                     <span className="editProduct-close-button" onClick={onClose}>&times;</span>
                 </div>
                 {apiError && <p className="error-message" style={{ color: 'red', whiteSpace: 'pre-wrap' }}>{apiError}</p>}
-                <form className="editProduct-modal-form" onSubmit={handleSubmit}>
+                <form className="editProduct-modal-form" onSubmit={handleSubmit} encType="multipart/form-data">
                     <label>
                         Product Type <span className="editProduct-required-asterisk">*</span>
                         <select
@@ -185,12 +205,48 @@ function EditProductModal({ product, onClose, onUpdate }) {
                     </label>
 
                     <label>
+                        Price <span className="editProduct-required-asterisk">*</span>
+                        <input
+                            id="edit-productPrice"
+                            type="number"
+                            min="0"
+                            step="0.01"
+                            value={productPrice}
+                            onChange={(e) => {
+                                setProductPrice(e.target.value);
+                                if (formErrors.productPrice) setFormErrors(prev => ({ ...prev, productPrice: "" }));
+                            }}
+                            className={formErrors.productPrice ? "editProduct-error" : ""}
+                        />
+                        {formErrors.productPrice && <p className="editProduct-error-message">{formErrors.productPrice}</p>}
+                    </label>
+
+                    <label>
                         Description
                         <textarea
                             id="edit-productDescription"
                             value={productDescription}
                             onChange={(e) => setProductDescription(e.target.value)}
                         ></textarea>
+                    </label>
+
+                    <label>
+                        Product Image
+                        <input
+                            id="edit-productImage"
+                            type="file"
+                            accept="image/*"
+                            onChange={handleImageChange}
+                        />
+                        {productImagePreview && (
+                            <div style={{ marginTop: 8 }}>
+                                <img
+                                    src={productImagePreview}
+                                    alt="Product Preview"
+                                    style={{ maxWidth: "100%", maxHeight: 150, borderRadius: 4, objectFit: "contain" }}
+                                />
+                            </div>
+                        )}
                     </label>
 
                     <div className="editProduct-button-container">
@@ -214,6 +270,8 @@ EditProductModal.propTypes = {
         productTypeID: PropTypes.any,
         productCategory: PropTypes.string,
         productDescription: PropTypes.string,
+        productPrice: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+        productImageURL: PropTypes.string,
     }).isRequired,
     onClose: PropTypes.func.isRequired,
     onUpdate: PropTypes.func.isRequired,

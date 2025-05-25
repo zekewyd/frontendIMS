@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react";
 import "./addProductModal.css";
 
-const API_BASE_URL = process.env.TYPE_API_URL;
-const BASE_URL = process.env.PRODUCTS_API_URL;
+const API_BASE_URL = "http://127.0.0.1:8001/ProductType";
+
 const getAuthToken = () => localStorage.getItem("access_token");
 
 function AddProductModal({ onClose, onSubmit }) {
@@ -11,12 +11,16 @@ function AddProductModal({ onClose, onSubmit }) {
     const [productName, setProductName] = useState("");
     const [productCategory, setProductCategory] = useState("");
     const [productDescription, setProductDescription] = useState("");
+    const [productPrice, setProductPrice] = useState("");
+    const [productImage, setProductImage] = useState(null);
 
     const [errors, setErrors] = useState({
         productTypeID: "",
         productName: "",
         productCategory: "",
-        productDescription: ""
+        productDescription: "",
+        productPrice: "",
+        productImage: ""
     });
 
     useEffect(() => {
@@ -56,6 +60,15 @@ function AddProductModal({ onClose, onSubmit }) {
         if (!productCategory) newErrors.productCategory = "This field is required";
         if (!productDescription) newErrors.productDescription = "This field is required";
 
+        if (!productPrice) {
+            newErrors.productPrice = "This field is required";
+        } else if (isNaN(productPrice) || Number(productPrice) <= 0) {
+            newErrors.productPrice = "Price must be a positive number";
+        }
+
+        // productImage is optional; if you want required, uncomment below
+        // if (!productImage) newErrors.productImage = "Please upload an image";
+
         setErrors(newErrors);
 
         if (Object.keys(newErrors).length === 0) {
@@ -65,21 +78,25 @@ function AddProductModal({ onClose, onSubmit }) {
                 return;
             }
 
-            const newProduct = {
-                ProductTypeID: parseInt(productTypeID),
-                ProductName: productName,
-                ProductCategory: productCategory,
-                ProductDescription: productDescription
-            };
+            // Use FormData to send image along with other data
+            const formData = new FormData();
+            formData.append("ProductTypeID", parseInt(productTypeID));
+            formData.append("ProductName", productName);
+            formData.append("ProductCategory", productCategory);
+            formData.append("ProductDescription", productDescription);
+            formData.append("ProductPrice", productPrice);
+            if (productImage) {
+                formData.append("ProductImage", productImage);
+            }
 
             try {
-                const response = await fetch(`${BASE_URL}/products/products/`, {
+                const response = await fetch("http://127.0.0.1:8001/products/products/", {
                     method: "POST",
                     headers: {
-                        "Content-Type": "application/json",
                         Authorization: `Bearer ${token}`
+                        // DO NOT set Content-Type here; browser sets it automatically with FormData
                     },
-                    body: JSON.stringify(newProduct)
+                    body: formData
                 });
 
                 if (!response.ok) {
@@ -96,7 +113,6 @@ function AddProductModal({ onClose, onSubmit }) {
             }
         }
     };
-
 
     const handleFocus = (field) => {
         setErrors((prevErrors) => ({
@@ -156,6 +172,20 @@ function AddProductModal({ onClose, onSubmit }) {
                     </label>
 
                     <label>
+                        Price <span className="addProduct-required-asterisk">*</span>
+                        <input
+                            type="number"
+                            min="0"
+                            step="0.01"
+                            value={productPrice}
+                            onChange={(e) => setProductPrice(e.target.value)}
+                            onFocus={() => handleFocus('productPrice')}
+                            className={errors.productPrice ? "addProduct-error" : ""}
+                        />
+                        {errors.productPrice && <p className="addProduct-error-message">{errors.productPrice}</p>}
+                    </label>
+
+                    <label>
                         Description <span className="addProduct-required-asterisk">*</span>
                         <textarea
                             value={productDescription}
@@ -164,6 +194,16 @@ function AddProductModal({ onClose, onSubmit }) {
                             className={errors.productDescription ? "addProduct-error" : ""}
                         />
                         {errors.productDescription && <p className="addProduct-error-message">{errors.productDescription}</p>}
+                    </label>
+
+                    <label>
+                        Product Image
+                        <input
+                            type="file"
+                            accept="image/*"
+                            onChange={(e) => setProductImage(e.target.files[0])}
+                        />
+                        {errors.productImage && <p className="addProduct-error-message">{errors.productImage}</p>}
                     </label>
 
                     <div className="addProduct-button-container">

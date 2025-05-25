@@ -161,7 +161,7 @@ function Products() {
                     <div className="header-right">
                         <div className="header-date">{currentDate}</div>
                         <div className="header-profile">
-                            <div className="profile-pic" style={{ backgroundImage: `url(${DEFAULT_PROFILE_IMAGE})` }}></div>
+                            <div className="profile-pic"style={{ backgroundImage: `url(${DEFAULT_PROFILE_IMAGE})` }}></div>
                             <div className="profile-info">
                                 <div className="profile-role">Hi! I'm {loggedInUserDisplay.role}</div>
                                 <div className="profile-name">{loggedInUserDisplay.name}</div>
@@ -192,46 +192,109 @@ function Products() {
                         ))}
                     </div>
                     <div className="product-bottom-row">
-                        <input
-                            type="text"
-                            className="product-search-box"
-                            placeholder="Search products..."
+                        <input 
+                            type="text" 
+                            className="product-search-box" 
+                            placeholder="Search products..." 
                             value={searchTerm}
                             onChange={handleSearchChange}
                         />
-                        <select className="sort-dropdown" value={sortOption} onChange={handleSortChange}>
-                            <option value="nameAsc">Sort A-Z</option>
-                            <option value="nameDesc">Sort Z-A</option>
-                        </select>
+                        <div className="sort-product-container">
+                            <label htmlFor="sort-product">Sort by:</label>
+                            <select 
+                                id="sort-product" 
+                                className="sort-product-select"
+                                value={sortOption}
+                                onChange={handleSortChange}
+                            >
+                                <option value="nameAsc">Newest</option>
+                                <option value="nameDesc">Oldest</option>
+                            </select>
+                        </div>
+                        <button className="add-product-button" onClick={() => setShowAddProductModal(true)}>
+                            + Add Product
+                        </button>
+                        <button className="product-type-button" onClick={() => {
+                            setShowProductTypeModal(true);
+                        }}>
+                            Product Type
+                        </button>
+                        <button 
+                            className="export-pdf-button" 
+                            onClick={() => {
+                                const filteredProducts = activeTab !== null
+                                    ? sortProducts(products.filter((product) => 
+                                        product.ProductTypeID === activeTab && 
+                                        product.ProductName.toLowerCase().includes(searchTerm.toLowerCase())
+                                    ))
+                                    : sortProducts(products.filter((product) => 
+                                        product.ProductName.toLowerCase().includes(searchTerm.toLowerCase())
+                                    ));
+                                exportProductsToPDF(filteredProducts, columns.filter(col => col.name !== "ACTIONS"));
+                            }}
+                        >
+                            <FaFilePdf /> Export PDF
+                        </button>
                     </div>
                 </div>
 
-                <div className="product-table">
+                <div className="products-content">
                     <DataTable
                         columns={columns}
-                        data={filteredAndSortedProducts()}
-                        pagination
+                        data={
+                            activeTab !== null
+                                ? sortProducts(products.filter((product) => 
+                                    product.ProductTypeID === activeTab && 
+                                    product.ProductName.toLowerCase().includes(searchTerm.toLowerCase())
+                                ))
+                                : sortProducts(products.filter((product) => 
+                                    product.ProductName.toLowerCase().includes(searchTerm.toLowerCase())
+                                ))
+                        }
+                        striped
                         highlightOnHover
-                        pointerOnHover
-                    />
-                </div>
-
-               {viewedProduct && (
-                    <ViewProductModal
-                        product={viewedProduct}
-                        onClose={() => setViewedProduct(null)}
-                        onEdit={handleEdit}
-                        onDelete={(id) => {
-                            handleDelete(id);
-                            setViewedProduct(null);
+                        responsive
+                        pagination
+                        customStyles={{
+                            headCells: {
+                                style: {
+                                    backgroundColor: "#4B929D",
+                                    color: "#fff",
+                                    fontWeight: "600",
+                                    fontSize: "14px",
+                                    padding: "12px",
+                                    textTransform: "uppercase",
+                                    textAlign: "center",
+                                    letterSpacing: "1px",
+                                },
+                            },
+                            rows: {
+                                style: {
+                                    minHeight: "100px",
+                                },
+                            },
                         }}
                     />
-                )}
+                </div>
+            </div>
+
+            {viewedProduct && (
+                <ViewProductModal
+                    product={viewedProduct}
+                    onClose={() => setViewedProduct(null)}
+                    onEdit={handleEdit}
+                    onDelete={(id) => {
+                        handleDelete(id);
+                        setViewedProduct(null);
+                    }}
+                />
+            )}
 
             {showProductTypeModal && (
                 <ProductTypeModal
                     onClose={() => setShowProductTypeModal(false)}
                     onProductTypeAdded={() => {
+                        fetchProductTypes();
                         setShowProductTypeModal(false);
                     }}
                 />
@@ -258,7 +321,6 @@ function Products() {
                 />
             )}
         </div>
-            </div>
     );
 }
 
