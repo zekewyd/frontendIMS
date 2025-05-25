@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from 'react-router-dom';
 import "../admin/products.css";
 import Sidebar from "../sidebar";
-import { FaChevronDown, FaFolderOpen, FaEdit, FaArchive } from "react-icons/fa";
+import { FaChevronDown, FaFolderOpen, FaEdit, FaArchive, FaFilePdf } from "react-icons/fa";
 import DataTable from "react-data-table-component";
 import ProductTypeModal from './modals/productTypeModal';
 import AddProductModal from './modals/addProductModal';
