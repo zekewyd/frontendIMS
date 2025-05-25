@@ -232,7 +232,6 @@ function Products() {
                 <ProductTypeModal
                     onClose={() => setShowProductTypeModal(false)}
                     onProductTypeAdded={() => {
-                        fetchProductTypes();
                         setShowProductTypeModal(false);
                     }}
                 />

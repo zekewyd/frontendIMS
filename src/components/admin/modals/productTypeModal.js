@@ -3,9 +3,6 @@ import "./productTypeModal.css";
 import DataTable from "react-data-table-component";
 import { FaEdit, FaArchive } from "react-icons/fa";
 
-const API_BASE_URL = process.env.TYPE_API_URL;
-const getAuthToken = () => localStorage.getItem("access_token");
-
 const ProductTypeModal = ({ onClose }) => {
     const [productTypes, setProductTypes] = useState([]);
     const [showAddFormModal, setShowAddFormModal] = useState(false);
@@ -15,134 +12,65 @@ const ProductTypeModal = ({ onClose }) => {
     const [isEditing, setIsEditing] = useState(false);
 
     useEffect(() => {
-        fetchProductTypes();
+        // Hardcoded product types
+        const hardcodedTypes = [
+            { productTypeID: 1, productTypeName: "Drinks" },
+            { productTypeID: 2, productTypeName: "Foods" },
+        ];
+        setProductTypes(hardcodedTypes);
     }, []);
 
-    const fetchProductTypes = async () => {
-        const token = getAuthToken();
-        if (!token) {
-            alert("Authentication token not found.");
-            return;
-        }
-
-        try {
-            const response = await fetch(`${API_BASE_URL}/`, {
-                headers: { Authorization: `Bearer ${token}` },
-            });
-
-            if (!response.ok) {
-                throw new Error("Failed to fetch product types.");
-            }
-
-            const data = await response.json();
-            setProductTypes(data);
-        } catch (error) {
-            console.error("Error fetching product types:", error);
-            alert("Failed to fetch product types.");
-        }
-    };
-
-    const handleAddType = async () => {
-        const token = getAuthToken();
-        if (!token) {
-            alert("Authentication token not found.");
-            return;
-        }
-
+    const handleAddType = () => {
         if (newTypeName.trim() === "") {
             alert("Product type name cannot be empty.");
             return;
         }
 
-        try {
-            const response = await fetch(`${API_BASE_URL}/create`, {
-                method: "POST",
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({ productTypeName: newTypeName }),
-            });
+        const newID = productTypes.length + 1;
+        const newType = {
+            productTypeID: newID,
+            productTypeName: newTypeName,
+        };
 
-            if (!response.ok) throw new Error("Failed to add product type.");
-
-            setNewTypeName("");
-            setShowAddFormModal(false);
-            fetchProductTypes();
-        } catch (error) {
-            console.error("Error adding product type:", error);
-            alert("Failed to add product type.");
-        }
+        setProductTypes([...productTypes, newType]);
+        setNewTypeName("");
+        setShowAddFormModal(false);
     };
-
+    
     const handleEdit = (type) => {
         setEditTypeID(type.productTypeID);
         setEditTypeName(type.productTypeName);
         setIsEditing(true);
     };
 
-    const handleUpdateType = async (e) => {
+    const handleUpdateType = (e) => {
         e.preventDefault();
-        const token = getAuthToken();
-        if (!token) {
-            alert("Authentication token not found.");
-            return;
-        }
-
         if (editTypeName.trim() === "") {
             alert("Product type name cannot be empty.");
             return;
         }
 
-        try {
-            const response = await fetch(`${API_BASE_URL}/${editTypeID}`, {
-                method: "PUT",
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({ productTypeName: editTypeName }),
-            });
-
-            if (!response.ok) throw new Error("Failed to update product type.");
-
-            setIsEditing(false);
-            setEditTypeID(null);
-            setEditTypeName("");
-            fetchProductTypes();
-        } catch (error) {
-            console.error("Error updating product type:", error);
-            alert("Failed to update product type.");
-        }
+        const updatedTypes = productTypes.map((type) =>
+            type.productTypeID === editTypeID ? { ...type, productTypeName: editTypeName } : type
+        );
+        setProductTypes(updatedTypes);
+        setIsEditing(false);
+        setEditTypeID(null);
+        setEditTypeName("");
     };
 
-    const handleDelete = async (typeId) => {
-        const token = getAuthToken();
-        if (!token) {
-            alert("Authentication token not found.");
-            return;
-        }
-
+    const handleDelete = (typeId) => {
         const confirmDelete = window.confirm("Are you sure you want to delete this product type?");
         if (!confirmDelete) return;
 
-        try {
-            const response = await fetch(`${API_BASE_URL}/${typeId}`, {
-                method: "DELETE",
-                headers: { Authorization: `Bearer ${token}` },
-            });
-
-            if (!response.ok) throw new Error("Failed to delete product type.");
-
-            setProductTypes((prev) => prev.filter((pt) => pt.productTypeID !== typeId));
-        } catch (error) {
-            console.error("Error deleting product type:", error);
-            alert("Failed to delete product type.");
-        }
+        const updatedTypes = productTypes.filter((pt) => pt.productTypeID !== typeId);
+        setProductTypes(updatedTypes);
     };
 
+
+
     const columns = [
-        { name: "Product Type ID", selector: (row) => row.productTypeID, sortable: true },
+        { name: "NO.", selector: (row) => row.productTypeID, sortable: true },
         { name: "Name", selector: (row) => row.productTypeName, sortable: true },
         {
             name: "Actions",
