@@ -66,17 +66,17 @@ function Products() {
 
     const handleEdit = (product) => {
         const normalized = {
-            productID: productFromRow.ProductID,
-            productTypeID: productFromRow.ProductTypeID,
-            productName: productFromRow.ProductName,
-            productCategory: productFromRow.ProductCategory,
-            productDescription: productFromRow.ProductDescription,
-            productPrice: productFromRow.ProductPrice,     
-            productImage: productFromRow.ProductImage, 
+            productID: product.ProductID,
+            productTypeID: product.ProductTypeID,
+            productName: product.ProductName,
+            productCategory: product.ProductCategory,
+            productDescription: product.ProductDescription,
+            productPrice: product.ProductPrice,     
+            productImage: product.ProductImage, 
         };
         setEditModalData(normalized);
         setShowEditProductModal(true);
-    };
+    }
 
     const handleUpdateProduct = (updated) => {
         setProducts(prev =>
