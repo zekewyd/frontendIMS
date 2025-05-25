@@ -8,6 +8,7 @@ import ProductTypeModal from './modals/productTypeModal';
 import AddProductModal from './modals/addProductModal';
 import EditProductModal from './modals/editProductModal';
 import ViewProductModal from './modals/viewProductModal';
+import { exportProductsToPDF } from '../../utils/pdfExport';
 
 const DEFAULT_PROFILE_IMAGE = "https://media-hosting.imagekit.io/1123dd6cf5c544aa/screenshot_1746457481487.png?Expires=1841065483&Key-Pair-Id=K2ZIVPTIP2VGHC&Signature=kiHcXbHpirt9QHbMA4by~Kd4b2BrczywyVUfZZpks5ga3tnO8KlP8s5tdDpZQqinqOG30tGn0tgSCwVausjJ1OJ9~e6qPVjLXbglD-65hmsehYCZgEzeyGPPE-rOlyGJCgJC~GCZOu0jDKKcu2fefrClaqBBT3jaXoK4qhDPfjIFa2GCMfetybNs0RF8BtyKLgFGeEkvibaXhYxmzO8tksUKaLAMLbsPWvHBNuzV6Ar3mj~lllq7r7nrynNfdvbtuED7OGczSqZ8H-iopheAUhaWZftAh9tX2vYZCZZ8UztSEO3XUgLxMMtv9NnTei1omK00iJv1fgBjwR2lSqRk7w__";
 
@@ -104,6 +105,15 @@ function Products() {
         }
 
         return filtered;
+    };
+
+    const sortProducts = (productsToSort) => {
+        if (sortOption === "nameAsc") {
+            return [...productsToSort].sort((a, b) => a.ProductName.localeCompare(b.ProductName));
+        } else if (sortOption === "nameDesc") {
+            return [...productsToSort].sort((a, b) => b.ProductName.localeCompare(a.ProductName));
+        }
+        return productsToSort;
     };
 
     const handleLogout = () => {
@@ -294,7 +304,6 @@ function Products() {
                 <ProductTypeModal
                     onClose={() => setShowProductTypeModal(false)}
                     onProductTypeAdded={() => {
-                        fetchProductTypes();
                         setShowProductTypeModal(false);
                     }}
                 />
